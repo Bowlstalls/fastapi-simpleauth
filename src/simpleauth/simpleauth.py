@@ -24,7 +24,8 @@ class SimpleAuth(Generic[TableType]):
         self.model = model
         self.token_lifespan = token_lifespan_days
 
-    def get_current_user(self):
+    @property
+    def current_user(self):
         async def dependency(
                 credentials: HTTPAuthorizationCredentials = Depends(self.security),
                 session: AsyncSession = Depends(self.get_session)
@@ -45,7 +46,6 @@ class SimpleAuth(Generic[TableType]):
             if not user:
                 raise HTTPException(status_code=401, detail="invalid token signature")
             return user
-
         return dependency
 
     async def _create_user(
