@@ -9,13 +9,13 @@ from datetime import datetime, timedelta
 import jwt
 import bcrypt
 
-from .model import UserBaseModel
+from .model import UserMixin
 
-TableType = TypeVar("TableType", bound=UserBaseModel)
+TableType = TypeVar("TableType", bound=UserMixin)
 
 
 class SimpleAuth(Generic[TableType]):
-    def __init__(self, secret: str, model: type[UserBaseModel],
+    def __init__(self, secret: str, model: type[UserMixin],
                  get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
                  token_lifespan_days: int = 30):
         self.secret = secret
