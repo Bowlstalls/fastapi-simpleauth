@@ -1,8 +1,8 @@
 from typing import TypeVar, Generic, Callable, AsyncGenerator
 from uuid import UUID
-
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 from fastapi.params import Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
@@ -19,18 +19,19 @@ class SimpleAuth(Generic[TableType]):
                  get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
                  token_lifespan_days: int = 30):
         self.secret = secret
+        self.security = HTTPBearer()
         self.get_session = get_session
         self.model = model
         self.token_lifespan = token_lifespan_days
 
     def get_current_user(self):
         async def dependency(
-                authorization: str = Header(),
+                credentials: HTTPAuthorizationCredentials = Depends(self.security),
                 session: AsyncSession = Depends(self.get_session)
             ) -> TableType:
-            scheme, token = authorization.split()
-            if scheme != "Bearer":
+            if credentials.scheme != "Bearer":
                 raise HTTPException(status_code=401, detail="invalid auth scheme")
+            token = credentials.credentials
             if not token:
                 raise HTTPException(status_code=401, detail="missing token")
             try:
