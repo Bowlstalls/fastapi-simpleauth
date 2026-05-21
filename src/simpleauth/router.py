@@ -22,7 +22,7 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
         }
 
     @router.get("/me", response_model=read)
-    async def me(user: type[UserMixin] = Depends(auth.get_current_user())):
+    async def me(user: type[UserMixin] = Depends(auth.current_user)):
         return user
 
     return router
