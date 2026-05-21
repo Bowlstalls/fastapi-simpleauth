@@ -98,8 +98,8 @@ class SimpleAuth(Generic[TableType]):
 
     @staticmethod
     def hash_password(password: str):
-        return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     @staticmethod
-    def verify_password(stored_hash: bytes, password: str):
-        return bcrypt.checkpw(password.encode(), stored_hash)
+    def verify_password(stored_hash: str, password: str):
+        return bcrypt.checkpw(password.encode(), stored_hash.encode())
