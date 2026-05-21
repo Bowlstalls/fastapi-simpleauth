@@ -12,12 +12,12 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
 
     @router.post("/register", response_model=read)
     async def register(data: create, session: AsyncSession = Depends(auth.get_session)):
-        return await auth._create_user(data.name, data.password, session)
+        return await auth._create_user(data.username, data.password, session)
 
     @router.post("/login")
     async def login(data: create, session: AsyncSession = Depends(auth.get_session)):
         return {
-            "token": await auth._create_token(data.name, data.password, session),
+            "token": await auth._create_token(data.username, data.password, session),
             "token_type": "Bearer"
         }
 

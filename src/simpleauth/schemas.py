@@ -4,9 +4,9 @@ from pydantic import BaseModel
 
 class UserReadBase(BaseModel):
     id: UUID
-    name: str
+    username: str
 
 
 class UserCreateBase(BaseModel):
-    name: str
+    username: str
     password: str
