@@ -49,14 +49,14 @@ class SimpleAuth(Generic[TableType]):
 
     async def _create_user(
             self,
-            name: str,
+            username: str,
             password: str,
             session: AsyncSession
         ) -> TableType:
-        if await self.get_user_by_name(name, session):
+        if await self.get_user_by_name(username, session):
             raise HTTPException(status_code=409, detail="username already exists")
         user = self.model(
-            username = name,
+            username = username,
             password = self.hash_password(password),
         )
         session.add(user)
@@ -66,11 +66,11 @@ class SimpleAuth(Generic[TableType]):
 
     async def _create_token(
             self,
-            name: str,
+            username: str,
             password: str,
             session: AsyncSession
         ) -> str:
-        user = await self.get_user_with_credentials(name, password, session)
+        user = await self.get_user_with_credentials(username, password, session)
         if not user:
             raise HTTPException(status_code=401, detail="invalid credentials")
         return jwt.encode(
@@ -82,14 +82,14 @@ class SimpleAuth(Generic[TableType]):
             algorithm="HS256"
         )
 
-    async def get_user_with_credentials(self, name, password, session) -> TableType | None:
-        res = await self.get_user_by_name(name, session)
+    async def get_user_with_credentials(self, username, password, session) -> TableType | None:
+        res = await self.get_user_by_name(username, session)
         if res and self.verify_password(res.password, password):
             return res
         return None
 
-    async def get_user_by_name(self, name: str, session: AsyncSession) -> TableType | None:
-        stmt = select(self.model).where(self.model.name == name)
+    async def get_user_by_name(self, username: str, session: AsyncSession) -> TableType | None:
+        stmt = select(self.model).where(self.model.username == username)
         return await session.scalar(stmt)
 
     async def get_user_by_id(self, user_id: UUID, session: AsyncSession) -> TableType | None:
