@@ -1,0 +1,100 @@
+from typing import Annotated, TypeVar, Generic, Callable, AsyncGenerator, Any, Coroutine
+from fastapi import Header, HTTPException
+from fastapi.params import Depends
+from jwt import InvalidSignatureError
+from sqlalchemy import Select
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timedelta
+import jwt
+import bcrypt
+
+from .model import UserBaseModel
+
+TableType = TypeVar("TableType", bound=UserBaseModel)
+
+
+class SimpleAuth(Generic[TableType]):
+    def __init__(self, secret: str, model: type[UserBaseModel],
+                 get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
+                 token_lifespan_days: int = 30):
+        self.secret = secret
+        self.get_session = get_session
+        self.model = model
+        self.token_lifespan = token_lifespan_days
+
+    def get_current_user(self):
+        async def dependency(
+                authorization: str = Header(),
+                session: AsyncSession = Depends(self.get_session)
+            ) -> TableType:
+            scheme, token = authorization.split()
+            if scheme != "Bearer":
+                raise HTTPException(status_code=401, detail="invalid auth scheme")
+            if not token:
+                raise HTTPException(status_code=401, detail="missing token")
+            try:
+                payload = jwt.decode(token, self.secret, algorithms=["HS256"])
+            except InvalidSignatureError:
+                raise HTTPException(status_code=401, detail="invalid token signature")
+
+            if datetime.fromisoformat(payload["expiresAt"]) < datetime.now():
+                raise HTTPException(status_code=401, detail="token has expired")
+            user = await self.get_user_with_credentials(payload["name"], payload["password"], session)
+            if not user:
+                raise HTTPException(status_code=401, detail="invalid token signature")
+            return user
+
+        return dependency
+
+    async def _create_user(
+            self,
+            name: str,
+            password: str,
+            session: AsyncSession
+        ) -> TableType:
+        if await self.get_user_by_name(name, session):
+            raise HTTPException(status_code=409, detail="username already exists")
+        user = self.model(
+            name = name,
+            password = self.hash_password(password),
+        )
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    async def _create_token(
+            self,
+            name: str,
+            password: str,
+            session: AsyncSession
+        ) -> str:
+        if not await self.get_user_with_credentials(name, password, session):
+            raise HTTPException(status_code=401, detail="invalid credentials")
+        return jwt.encode(
+            {
+                "name": name,
+                "password": password,
+                "expiresAt": (datetime.now() + timedelta(days=self.token_lifespan)).isoformat()
+            },
+            self.secret,
+            algorithm="HS256"
+        )
+
+    async def get_user_with_credentials(self, name, password, session) -> TableType | None:
+        res = await self.get_user_by_name(name, session)
+        if res and self.verify_password(res.password, password):
+            return res
+        return None
+
+    async def get_user_by_name(self, name: str, session: AsyncSession) -> TableType | None:
+        stmt = Select(self.model).where(self.model.name == name)
+        return await session.scalar(stmt)
+
+    @staticmethod
+    def hash_password(password: str):
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+    @staticmethod
+    def verify_password(stored_hash: bytes, password: str):
+        return bcrypt.checkpw(password.encode(), stored_hash)
