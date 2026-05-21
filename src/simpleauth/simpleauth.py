@@ -1,7 +1,9 @@
 from typing import TypeVar, Generic, Callable, AsyncGenerator
+from uuid import UUID
+
 from fastapi import Header, HTTPException
 from fastapi.params import Depends
-from sqlalchemy import Select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import jwt
@@ -38,7 +40,7 @@ class SimpleAuth(Generic[TableType]):
 
             if datetime.fromisoformat(payload["expiresAt"]) < datetime.now():
                 raise HTTPException(status_code=401, detail="token has expired")
-            user = await self.get_user_with_credentials(payload["name"], payload["password"], session)
+            user = await self.get_user_by_id(payload["id"], session)
             if not user:
                 raise HTTPException(status_code=401, detail="invalid token signature")
             return user
@@ -68,12 +70,12 @@ class SimpleAuth(Generic[TableType]):
             password: str,
             session: AsyncSession
         ) -> str:
-        if not await self.get_user_with_credentials(name, password, session):
+        user = await self.get_user_with_credentials(name, password, session)
+        if not user:
             raise HTTPException(status_code=401, detail="invalid credentials")
         return jwt.encode(
             {
-                "name": name,
-                "password": password,
+                "id": user.id,
                 "expiresAt": (datetime.now() + timedelta(days=self.token_lifespan)).isoformat()
             },
             self.secret,
@@ -87,7 +89,11 @@ class SimpleAuth(Generic[TableType]):
         return None
 
     async def get_user_by_name(self, name: str, session: AsyncSession) -> TableType | None:
-        stmt = Select(self.model).where(self.model.name == name)
+        stmt = select(self.model).where(self.model.name == name)
+        return await session.scalar(stmt)
+
+    async def get_user_by_id(self, user_id: UUID, session: AsyncSession) -> TableType | None:
+        stmt = select(self.model).where(self.model.id == user_id)
         return await session.scalar(stmt)
 
     @staticmethod
