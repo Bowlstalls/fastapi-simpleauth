@@ -35,9 +35,10 @@ class SimpleAuth(Generic[TableType]):
             token = credentials.credentials
             if not token:
                 raise HTTPException(status_code=401, detail="missing token")
+
             try:
                 payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-                user = await self.get_user_by_id(payload["sub"], session)
+                user = await self.get_user_by_id(UUID(payload["sub"]), session)
                 if not user:
                     raise AssertionError("couldn't find user")
                 return user
@@ -65,8 +66,8 @@ class SimpleAuth(Generic[TableType]):
             raise HTTPException(status_code=401, detail="invalid credentials")
         return jwt.encode(
             {
-                "sub": user.id,
-                "exp": (datetime.now() + timedelta(days=self.token_lifespan)).isoformat()
+                "sub": str(user.id),
+                "exp": datetime.now() + timedelta(days=self.token_lifespan)
             },
             self.secret,
             algorithm="HS256"
