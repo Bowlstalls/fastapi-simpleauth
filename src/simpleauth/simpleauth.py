@@ -1,7 +1,6 @@
-from typing import Annotated, TypeVar, Generic, Callable, AsyncGenerator, Any, Coroutine
+from typing import TypeVar, Generic, Callable, AsyncGenerator
 from fastapi import Header, HTTPException
 from fastapi.params import Depends
-from jwt import InvalidSignatureError
 from sqlalchemy import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
@@ -34,7 +33,7 @@ class SimpleAuth(Generic[TableType]):
                 raise HTTPException(status_code=401, detail="missing token")
             try:
                 payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-            except InvalidSignatureError:
+            except jwt.InvalidSignatureError:
                 raise HTTPException(status_code=401, detail="invalid token signature")
 
             if datetime.fromisoformat(payload["expiresAt"]) < datetime.now():
