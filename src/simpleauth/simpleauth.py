@@ -56,7 +56,7 @@ class SimpleAuth(Generic[TableType]):
         if await self.get_user_by_name(name, session):
             raise HTTPException(status_code=409, detail="username already exists")
         user = self.model(
-            name = name,
+            username = name,
             password = self.hash_password(password),
         )
         session.add(user)
