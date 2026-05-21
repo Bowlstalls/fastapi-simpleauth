@@ -37,9 +37,9 @@ class SimpleAuth(Generic[TableType]):
                 payload = jwt.decode(token, self.secret, algorithms=["HS256"])
             except jwt.InvalidSignatureError:
                 raise HTTPException(status_code=401, detail="invalid token signature")
-
-            if datetime.fromisoformat(payload["expiresAt"]) < datetime.now():
+            except jwt.ExpiredSignatureError:
                 raise HTTPException(status_code=401, detail="token has expired")
+
             user = await self.get_user_by_id(payload["id"], session)
             if not user:
                 raise HTTPException(status_code=401, detail="invalid token signature")
@@ -76,7 +76,7 @@ class SimpleAuth(Generic[TableType]):
         return jwt.encode(
             {
                 "id": user.id,
-                "expiresAt": (datetime.now() + timedelta(days=self.token_lifespan)).isoformat()
+                "exp": (datetime.now() + timedelta(days=self.token_lifespan)).isoformat()
             },
             self.secret,
             algorithm="HS256"
