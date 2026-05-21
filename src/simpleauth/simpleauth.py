@@ -37,15 +37,14 @@ class SimpleAuth(Generic[TableType]):
                 raise HTTPException(status_code=401, detail="missing token")
             try:
                 payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-            except jwt.InvalidSignatureError:
-                raise HTTPException(status_code=401, detail="invalid token signature")
+                user = await self.get_user_by_id(payload["sub"], session)
+                if not user:
+                    raise AssertionError("couldn't find user")
+                return user
             except jwt.ExpiredSignatureError:
                 raise HTTPException(status_code=401, detail="token has expired")
-
-            user = await self.get_user_by_id(payload["sub"], session)
-            if not user:
-                raise HTTPException(status_code=401, detail="invalid token signature")
-            return user
+            except Exception:
+                raise HTTPException(status_code=401, detail="invalid token")
         return dependency
 
     async def _create_user(
