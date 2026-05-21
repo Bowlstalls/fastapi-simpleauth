@@ -47,12 +47,7 @@ class SimpleAuth(Generic[TableType]):
                 raise HTTPException(status_code=401, detail="invalid token")
         return dependency
 
-    async def _create_user(
-            self,
-            username: str,
-            password: str,
-            session: AsyncSession
-        ) -> TableType:
+    async def _create_user(self, username: str, password: str, session: AsyncSession) -> TableType:
         if await self.get_user_by_name(username, session):
             raise HTTPException(status_code=409, detail="username already exists")
         user = self.model(
@@ -64,12 +59,7 @@ class SimpleAuth(Generic[TableType]):
         await session.refresh(user)
         return user
 
-    async def _create_token(
-            self,
-            username: str,
-            password: str,
-            session: AsyncSession
-        ) -> str:
+    async def _create_token(self, username: str, password: str, session: AsyncSession) -> str:
         user = await self.get_user_with_credentials(username, password, session)
         if not user:
             raise HTTPException(status_code=401, detail="invalid credentials")
