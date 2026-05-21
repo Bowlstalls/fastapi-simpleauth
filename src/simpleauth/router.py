@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .simpleauth import SimpleAuth, TableType
+from .simpleauth import SimpleAuth
+from .model import UserBaseModel
 from .schemas import UserCreateBase, UserReadBase
 
 
@@ -21,7 +22,7 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
         }
 
     @router.get("/me", response_model=read)
-    async def me(user: TableType = Depends(auth.get_current_user())):
+    async def me(user: type[UserBaseModel] = Depends(auth.get_current_user())):
         return user
 
     return router
