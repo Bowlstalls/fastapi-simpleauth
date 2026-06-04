@@ -1,5 +1,4 @@
 import pytest
-from conftest import client
 
 
 @pytest.mark.asyncio
@@ -11,8 +10,8 @@ async def test_register(client):
             "password": "password"
         }
     )
-    print(response.json())
     assert response.status_code == 200
+    assert response.json()["username"] == "name"
 
 
 @pytest.mark.asyncio
