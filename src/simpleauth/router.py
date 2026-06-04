@@ -10,15 +10,19 @@ from .schemas import UserCreateBase, UserReadBase, TokenRead
 def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[UserCreateBase]):
     router = APIRouter(prefix="/auth", tags=["auth"])
 
-    @router.post("/register", response_model=read)
+    @router.post("/register", response_model=read, responses={
+        409: {"description": "username already exists"}
+    })
     async def register(data: create, session: AsyncSession = Depends(auth.get_session)):
         return await auth._create_user(data.username, data.password, session)
 
-    @router.post("/login", response_model=TokenRead)
+    @router.post("/login", response_model=TokenRead, responses={
+        401: {"description": "login failed"}
+    })
     async def login(data: create, session: AsyncSession = Depends(auth.get_session)):
         return {
             "token": await auth._create_token(data.username, data.password, session),
-            "token_type": "Bearer"
+            "token-type": "Bearer"
         }
 
     @router.get("/me", response_model=read)
