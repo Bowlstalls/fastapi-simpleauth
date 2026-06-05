@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Callable, AsyncGenerator
+from typing import TypeVar, Generic, Callable, AsyncGenerator, Union
 from uuid import UUID
 from fastapi import HTTPException
 from fastapi.params import Depends
@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import jwt
 import bcrypt
+from sqlalchemy.orm import DeclarativeBase
 
 from .model import UserMixin
 
@@ -15,7 +16,7 @@ TableType = TypeVar("TableType", bound=UserMixin)
 
 
 class SimpleAuth(Generic[TableType]):
-    def __init__(self, secret: str, model: type[UserMixin],
+    def __init__(self, secret: str, model: type[Union[UserMixin, DeclarativeBase]],
                  get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
                  token_lifespan_days: int = 30):
         self.secret = secret
