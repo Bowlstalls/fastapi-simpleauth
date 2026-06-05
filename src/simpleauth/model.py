@@ -1,5 +1,5 @@
 from uuid import uuid4, UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class UserMixin:
