@@ -19,7 +19,7 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
     @router.post("/login", response_model=TokenRead, responses={
         401: {"description": "Login Failed"}
     })
-    async def login(data: create, session: AsyncSession = Depends(auth.get_session)):
+    async def login(data: LoginRequest, session: AsyncSession = Depends(auth._get_session)):
         return {
             "access_token": await auth._create_token(data.username, data.password, session),
             "token_type": "Bearer"
