@@ -21,8 +21,8 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
     })
     async def login(data: create, session: AsyncSession = Depends(auth.get_session)):
         return {
-            "token": await auth._create_token(data.username, data.password, session),
-            "token-type": "Bearer"
+            "access_token": await auth._create_token(data.username, data.password, session),
+            "token_type": "Bearer"
         }
 
     @router.get("/me", response_model=read, responses={

@@ -13,5 +13,5 @@ class UserCreateBase(BaseModel):
 
 
 class TokenRead(BaseModel):
-    token: str
-    token_type: str = Field(alias="token-type")
+    access_token: str
+    token_type: str
