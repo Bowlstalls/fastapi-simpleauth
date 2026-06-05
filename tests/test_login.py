@@ -7,7 +7,6 @@ async def test_login(client, registered_user):
         "auth/login",
         json=registered_user
     )
-    print(response.json())
     assert response.status_code == 200
 
 
