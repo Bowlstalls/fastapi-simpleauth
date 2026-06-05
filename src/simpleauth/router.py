@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .simpleauth import SimpleAuth
 from .model import UserMixin
-from .schemas import UserCreateBase, UserReadBase, TokenRead
+from .schemas import UserCreateBase, UserReadBase, TokenRead, LoginRequest
 
 
 def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[UserCreateBase]):
