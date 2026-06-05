@@ -4,10 +4,8 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from src.simpleauth.model import UserMixin
-from src.simpleauth.router import get_auth_router
-from src.simpleauth.schemas import UserReadBase, UserCreateBase
-from src.simpleauth.simpleauth import SimpleAuth
+from simpleauth import SimpleAuth, UserMixin, get_auth_router
+from simpleauth.schemas import UserReadBase, UserCreateBase
 
 
 class Base(DeclarativeBase):
