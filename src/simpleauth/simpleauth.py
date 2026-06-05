@@ -5,7 +5,7 @@ from fastapi.params import Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 import bcrypt
 from sqlalchemy.orm import DeclarativeBase
@@ -64,7 +64,7 @@ class SimpleAuth(Generic[TableType]):
         return jwt.encode(
             {
                 "sub": str(user.id),
-                "exp": datetime.now() + timedelta(days=self.token_lifespan)
+                "exp": datetime.now(timezone.utc) + timedelta(days=self.token_lifespan)
             },
             self.secret,
             algorithm="HS256"
