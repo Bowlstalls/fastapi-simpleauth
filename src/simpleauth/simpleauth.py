@@ -31,11 +31,7 @@ class SimpleAuth(Generic[TableType]):
                 credentials: HTTPAuthorizationCredentials = Security(self.security),
                 session: AsyncSession = Depends(self.get_session)
             ) -> TableType:
-            if credentials.scheme != "Bearer":
-                raise HTTPException(status_code=401, detail="invalid auth scheme")
             token = credentials.credentials
-            if not token:
-                raise HTTPException(status_code=401, detail="missing token")
 
             try:
                 payload = jwt.decode(token, self.secret, algorithms=["HS256"])
