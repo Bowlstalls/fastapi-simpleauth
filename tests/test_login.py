@@ -21,4 +21,4 @@ async def test_invalid_credentials(client):
         }
     )
     assert response.status_code == 401
-    assert response.json()["detail"] == "invalid credentials"
+    assert response.json()["detail"] == "Invalid credentials"

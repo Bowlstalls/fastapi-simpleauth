@@ -40,14 +40,14 @@ class SimpleAuth(Generic[TableType]):
                     raise AssertionError("couldn't find user")
                 return user
             except jwt.ExpiredSignatureError:
-                raise HTTPException(status_code=401, detail="token has expired")
+                raise HTTPException(status_code=401, detail="Token has expired")
             except Exception:
-                raise HTTPException(status_code=401, detail="invalid token")
+                raise HTTPException(status_code=401, detail="Invalid token")
         return dependency
 
     async def _create_user(self, username: str, password: str, session: AsyncSession) -> TableType:
         if await self.get_user_by_name(username, session):
-            raise HTTPException(status_code=409, detail="username already exists")
+            raise HTTPException(status_code=409, detail="Username already exists")
         user = self.model(
             username = username,
             password = self.hash_password(password),
@@ -60,7 +60,7 @@ class SimpleAuth(Generic[TableType]):
     async def _create_token(self, username: str, password: str, session: AsyncSession) -> str:
         user = await self.get_user_with_credentials(username, password, session)
         if not user:
-            raise HTTPException(status_code=401, detail="invalid credentials")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
         return jwt.encode(
             {
                 "sub": str(user.id),

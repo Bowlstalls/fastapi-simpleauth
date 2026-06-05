@@ -31,4 +31,4 @@ async def test_register_duplicate_username(client):
         }
     )
     assert response.status_code == 409
-    assert response.json()["detail"] == "username already exists"
+    assert response.json()["detail"] == "Username already exists"
