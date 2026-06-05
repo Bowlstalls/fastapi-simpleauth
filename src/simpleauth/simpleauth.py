@@ -19,23 +19,23 @@ class SimpleAuth(Generic[TableType]):
     def __init__(self, secret: str, model: type[Union[UserMixin, DeclarativeBase]],
                  get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
                  token_lifespan_days: int = 30):
-        self.secret = secret
-        self.security = HTTPBearer()
-        self.get_session = get_session
-        self.model = model
-        self.token_lifespan = token_lifespan_days
+        self._secret = secret
+        self._security = HTTPBearer()
+        self._get_session = get_session
+        self._model = model
+        self._token_lifespan = token_lifespan_days
 
     @property
     def current_user(self):
         async def dependency(
-                credentials: HTTPAuthorizationCredentials = Security(self.security),
-                session: AsyncSession = Depends(self.get_session)
+                credentials: HTTPAuthorizationCredentials = Security(self._security),
+                session: AsyncSession = Depends(self._get_session)
             ) -> TableType:
             token = credentials.credentials
 
             try:
-                payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-                user = await self.get_user_by_id(UUID(payload["sub"]), session)
+                payload = jwt.decode(token, self._secret, algorithms=["HS256"])
+                user = await self._get_user_by_id(UUID(payload["sub"]), session)
                 if not user:
                     raise AssertionError("couldn't find user")
                 return user
@@ -46,11 +46,11 @@ class SimpleAuth(Generic[TableType]):
         return dependency
 
     async def _create_user(self, username: str, password: str, session: AsyncSession) -> TableType:
-        if await self.get_user_by_name(username, session):
+        if await self._get_user_by_name(username, session):
             raise HTTPException(status_code=409, detail="Username already exists")
-        user = self.model(
+        user = self._model(
             username = username,
-            password = self.hash_password(password),
+            password = self._hash_password(password),
         )
         session.add(user)
         await session.commit()
@@ -58,36 +58,36 @@ class SimpleAuth(Generic[TableType]):
         return user
 
     async def _create_token(self, username: str, password: str, session: AsyncSession) -> str:
-        user = await self.get_user_with_credentials(username, password, session)
+        user = await self._get_user_with_credentials(username, password, session)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         return jwt.encode(
             {
                 "sub": str(user.id),
-                "exp": datetime.now(timezone.utc) + timedelta(days=self.token_lifespan)
+                "exp": datetime.now(timezone.utc) + timedelta(days=self._token_lifespan)
             },
-            self.secret,
+            self._secret,
             algorithm="HS256"
         )
 
-    async def get_user_with_credentials(self, username, password, session) -> TableType | None:
-        res = await self.get_user_by_name(username, session)
-        if res and self.verify_password(res.password, password):
+    async def _get_user_with_credentials(self, username, password, session) -> TableType | None:
+        res = await self._get_user_by_name(username, session)
+        if res and self._verify_password(res.password, password):
             return res
         return None
 
-    async def get_user_by_name(self, username: str, session: AsyncSession) -> TableType | None:
-        stmt = select(self.model).where(self.model.username == username)
+    async def _get_user_by_name(self, username: str, session: AsyncSession) -> TableType | None:
+        stmt = select(self._model).where(self._model.username == username)
         return await session.scalar(stmt)
 
-    async def get_user_by_id(self, user_id: UUID, session: AsyncSession) -> TableType | None:
-        stmt = select(self.model).where(self.model.id == user_id)
+    async def _get_user_by_id(self, user_id: UUID, session: AsyncSession) -> TableType | None:
+        stmt = select(self._model).where(self._model.id == user_id)
         return await session.scalar(stmt)
 
     @staticmethod
-    def hash_password(password: str):
+    def _hash_password(password: str):
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     @staticmethod
-    def verify_password(stored_hash: str, password: str):
+    def _verify_password(stored_hash: str, password: str):
         return bcrypt.checkpw(password.encode(), stored_hash.encode())

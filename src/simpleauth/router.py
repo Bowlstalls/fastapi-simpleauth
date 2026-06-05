@@ -13,7 +13,7 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
     @router.post("/register", response_model=read, responses={
         409: {"description": "Username Already Exists"}
     })
-    async def register(data: create, session: AsyncSession = Depends(auth.get_session)):
+    async def register(data: create, session: AsyncSession = Depends(auth._get_session)):
         return await auth._create_user(data.username, data.password, session)
 
     @router.post("/login", response_model=TokenRead, responses={
