@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from simpleauth import SimpleAuth, UserMixin, get_auth_router
-from simpleauth.schemas import UserReadBase, UserCreateBase
+from lightauth import LightAuth, UserMixin, get_auth_router
+from lightauth.schemas import UserReadBase, UserCreateBase
 
 
 class Base(DeclarativeBase):
@@ -32,7 +32,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, Any]:
         yield session
 
 
-auth = SimpleAuth[User]("secret", User, get_session)
+auth = LightAuth[User]("secret", User, get_session)
 auth_router = get_auth_router(auth, UserReadSchema, UserCreateBase)
 
 

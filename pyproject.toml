@@ -3,13 +3,13 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fastapi-simpleauth"
+name = "fastapi-lightauth"
 version = "0.1.0"
 description = "A lightweight JWT authentication library for FastAPI and SQLAlchemy."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-license-files = ["LICEN[CS]E.*"]
+license-files = ["LICEN[CS]E"]
 authors = [
     { name = "Bowlstalls" }
 ]
@@ -52,8 +52,8 @@ example = [
 ]
 
 [project.urls]
-Repository = "https://github.com/Bowlstalls/fastapi-simpleauth"
-Issues = "https://github.com/Bowlstalls/fastapi-simpleauth/issues"
+Repository = "https://github.com/Bowlstalls/fastapi-lightauth"
+Issues = "https://github.com/Bowlstalls/fastapi-lightauth/issues"
 
 [tool.setuptools]
 include-package-data = true

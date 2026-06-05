@@ -1,4 +1,4 @@
-# fastapi-simpleauth
+# fastapi-lightauth
 
 A lightweight JWT authentication library for FastAPI and SQLAlchemy.
 Built with simplicity in mind for small and medium FastAPI projects.
@@ -15,7 +15,7 @@ Features:
 ## Installation
 
 ```bash
-pip install fastapi-simpleauth
+pip install fastapi-lightauth
 ```
 
 ---
@@ -24,20 +24,21 @@ pip install fastapi-simpleauth
 
 ### 1. Define your user model
 
-SimpleAuth requires 'UserMixin', but everything else is completely up to you
+LightAuth requires 'UserMixin', but everything else is completely up to you
+
 ```python
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from simpleauth import UserMixin
+from lightauth import UserMixin
 
 
 class Base(DeclarativeBase):
-    pass
+  pass
 
 
 class User(UserMixin, Base):
-    __tablename__ = "users"
+  __tablename__ = "users"
 
-    extra_stuff: Mapped[str] = mapped_column(default="no extra stuff here")
+  extra_stuff: Mapped[str] = mapped_column(default="no extra stuff here")
 ```
 
 ---
@@ -47,11 +48,11 @@ class User(UserMixin, Base):
 You can add fields that you want returned in API responses:
 
 ```python
-from simpleauth.schemas import UserReadBase
+from lightauth.schemas import UserReadBase
 
 
 class UserReadSchema(UserReadBase):
-    extra_stuff: str
+  extra_stuff: str
 ```
 
 ---
@@ -73,15 +74,15 @@ async def get_session() -> AsyncGenerator[AsyncSession, Any]:
 
 ---
 
-### 4. Set up SimpleAuth
+### 4. Set up LightAuth
 
 ```python
-from simpleauth import SimpleAuth
+from lightauth import LightAuth
 
-auth = SimpleAuth[User](
-    secret="your-secret-key",
-    model=User,
-    get_session=get_session,
+auth = LightAuth[User](
+  secret="your-secret-key",
+  model=User,
+  get_session=get_session,
 )
 ```
 Optionally configure token lifespan via `token_lifespan_days`
@@ -91,15 +92,15 @@ Optionally configure token lifespan via `token_lifespan_days`
 ### 5. Add the router
 
 ```python
-from simpleauth import get_auth_router
-from simpleauth.schemas import UserCreateBase
+from lightauth import get_auth_router
+from lightauth.schemas import UserCreateBase
 
 app.include_router(
-    get_auth_router(
-        auth,
-        UserReadSchema,
-        UserCreateBase,
-    )
+  get_auth_router(
+    auth,
+    UserReadSchema,
+    UserCreateBase,
+  )
 )
 ```
 

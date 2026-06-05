@@ -15,7 +15,7 @@ from .model import UserMixin
 TableType = TypeVar("TableType", bound=UserMixin)
 
 
-class SimpleAuth(Generic[TableType]):
+class LightAuth(Generic[TableType]):
     def __init__(self, secret: str, model: type[Union[UserMixin, DeclarativeBase]],
                  get_session: Callable[..., AsyncGenerator[AsyncSession, None]],
                  token_lifespan_days: int = 30):
