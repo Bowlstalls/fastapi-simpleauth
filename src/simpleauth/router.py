@@ -25,7 +25,9 @@ def get_auth_router(auth: SimpleAuth, read: type[UserReadBase], create: type[Use
             "token-type": "Bearer"
         }
 
-    @router.get("/me", response_model=read)
+    @router.get("/me", response_model=read, responses={
+        401: {"description": "Unauthorized"}
+    })
     async def me(user: type[UserMixin] = Depends(auth.current_user)):
         return user
 
