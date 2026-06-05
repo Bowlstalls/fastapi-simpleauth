@@ -24,7 +24,7 @@ class UserReadSchema(UserReadBase):
     extra_stuff: str
 
 
-DB_URL = "sqlite+aiosqlite:///./test.db"
+DB_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(DB_URL)
 session_maker = async_sessionmaker(engine)
 
