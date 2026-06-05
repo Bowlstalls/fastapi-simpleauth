@@ -9,6 +9,7 @@ description = "A lightweight JWT authentication library for FastAPI and SQLAlche
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+license-files = ["LICEN[CS]E.*"]
 authors = [
     { name = "Bowlstalls" }
 ]
@@ -41,6 +42,16 @@ dependencies = [
     "bcrypt>=4.1.0",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+examples = [
+    "aiosqlite>=0.20",
+]
+
 [project.urls]
 Repository = "https://github.com/Bowlstalls/fastapi-simpleauth"
 Issues = "https://github.com/Bowlstalls/fastapi-simpleauth/issues"
@@ -49,4 +60,4 @@ Issues = "https://github.com/Bowlstalls/fastapi-simpleauth/issues"
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["simpleauth*"]
+where = ["src"]
