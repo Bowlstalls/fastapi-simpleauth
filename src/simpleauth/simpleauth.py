@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic, Callable, AsyncGenerator, Union
 from uuid import UUID
 from fastapi import HTTPException
-from fastapi.params import Depends
+from fastapi.params import Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +28,7 @@ class SimpleAuth(Generic[TableType]):
     @property
     def current_user(self):
         async def dependency(
-                credentials: HTTPAuthorizationCredentials = Depends(self.security),
+                credentials: HTTPAuthorizationCredentials = Security(self.security),
                 session: AsyncSession = Depends(self.get_session)
             ) -> TableType:
             if credentials.scheme != "Bearer":
